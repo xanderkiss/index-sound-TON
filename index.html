@@ -79,7 +79,7 @@
             document.getElementById('currentQueue').innerText = `คิวปัจจุบัน: ${queueNumber}`;
             document.getElementById('currentChannel').innerText = `ที่ช่องบริการ: ${channel}`;
             openPopup(`คิวที่ ${queueNumber}`, `ช่องบริการ ${channel}`);
-            speakThai(`คิวปัจจุบันคือ ${queueNumber} ที่ช่องบริการ ${channel}`);
+            speakThai(`ขอเชิญคิวที่  ${queueNumber}_ ที่ช่องบริการ ${channel}`);
             queueNumber++;
         }
 
@@ -96,7 +96,7 @@
                 document.getElementById('currentQueue').innerText = `คิวปัจจุบัน: ${queueNumber - 1}`;
                 document.getElementById('currentChannel').innerText = `ที่ช่องบริการ: ${lastChannel}`;
                 openPopup(`คิวที่ ${queueNumber - 1}`, `ซ้ำอีกครั้งที่ช่องบริการ ${lastChannel}`);
-                speakThai(`คิวปัจจุบันคือ ${queueNumber - 1} ที่ช่องบริการ ${lastChannel}`);
+                speakThai(`ขอเชิญคิวที่  ${queueNumber - 1}_ ที่ช่องบริการ ${lastChannel}`);
             }
         }
 
@@ -104,22 +104,29 @@
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'th-TH';
 
+    // ดึงรายการเสียงทั้งหมด
     const voices = window.speechSynthesis.getVoices();
-    const thaiVoice = voices.find(voice => voice.lang === 'th-TH');
+    
+    // พยายามค้นหาเสียงภาษาไทยที่เป็นเสียงผู้หญิง
+    const thaiFemaleVoice = voices.find(voice => voice.lang === 'th-TH' && voice.name.toLowerCase().includes("female"));
+    
+    // หากไม่มีเสียงภาษาไทยที่เป็นผู้หญิง ให้เลือกเสียงภาษาไทยที่มี
+    const thaiVoice = thaiFemaleVoice || voices.find(voice => voice.lang === 'th-TH');
 
     if (thaiVoice) {
         utterance.voice = thaiVoice;
+        window.speechSynthesis.speak(utterance);
     } else {
+        alert("ระบบของคุณไม่รองรับเสียงภาษาไทยหรือเสียงผู้หญิง กรุณาตรวจสอบการตั้งค่าเสียงในเบราว์เซอร์หรือระบบของคุณ");
         console.warn("ไม่มีเสียงภาษาไทยที่ระบบรองรับ");
     }
-
-    window.speechSynthesis.speak(utterance);
 }
 
-// เรียกใช้เสียงในระบบทันทีที่พร้อม
+// รอให้เสียงโหลดก่อน
 window.speechSynthesis.onvoiceschanged = () => {
-    const voices = window.speechSynthesis.getVoices();
+    window.speechSynthesis.getVoices();
 };
+
 
 
         function openPopup(queueText, channelText) {
